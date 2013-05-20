@@ -55,7 +55,7 @@ public class Main {
 				System.out.println("Router_ID = "
 						+ manager.addNewRouter(new File(in.nextLine())));
 			} else if (input.startsWith(GET_SPEED)) {
-				System.out.print(">WayID Time RouterID(Opcional): ");
+				System.out.print(">RouterID(Opcional) WayID Time : ");
 				String[] tokens = in.nextLine().split(" ");
 				if (tokens.length == SPEED_NUM_ARGS_ALL) {
 					double[] res = manager.getAverageSpeed(tokens[0],

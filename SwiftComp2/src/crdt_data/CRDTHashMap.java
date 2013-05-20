@@ -12,7 +12,8 @@ public class CRDTHashMap implements CRDTMap {
 		processID = PID;
 	}
 
-	public boolean addReading(int timeStamp, String wayID, double speed) {
+	@Override
+	public synchronized boolean addReading(int timeStamp, String wayID, double speed) {
 		CRDTAverage wayAvg = map.get(wayID);
 		if (wayAvg == null){
 			wayAvg = new CRDTHashAverage(processID);
@@ -21,6 +22,7 @@ public class CRDTHashMap implements CRDTMap {
 		return wayAvg.addReading(timeStamp, speed);
 	}
 	
+	@Override
 	public double[] getAverageSpeed(String wayID, int currentTime){
 		CRDTAverage wayAvg = map.get(wayID);
 		if(wayAvg==null)
@@ -28,7 +30,8 @@ public class CRDTHashMap implements CRDTMap {
 		return wayAvg.getAverage(currentTime);
 	}
 
-	public HashMap<String, CRDTAverage> merge(CRDTMap other) {
+	@Override
+	public synchronized HashMap<String, CRDTAverage> merge(CRDTMap other) {
 		HashMap<String, CRDTAverage> otherMap = ((CRDTHashMap)other).map;
 		for (String wayID : otherMap.keySet()) {
 			CRDTAverage myOtherAvg = map.get(wayID);
@@ -42,7 +45,7 @@ public class CRDTHashMap implements CRDTMap {
 	}
 
 	@Override
-	public void mergeHallow(String wayID, String hallowID,
+	public synchronized void mergeHallow(String wayID, String hallowID,
 			Agglomerator agglomerator) {
 		CRDTAverage avg = map.get(wayID);
 		if(avg==null){

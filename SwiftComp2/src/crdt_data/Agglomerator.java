@@ -26,9 +26,14 @@ public class Agglomerator {
 		this(DEFAULT_NUM_UNITS, DEFAULT_UNIT_SIZE);
 	}
 
+	/**
+	 * This constructor builds a independent clone of other.
+	 * 
+	 * @param other
+	 */
 	public Agglomerator(Agglomerator other) {
 		this(other.num_units, other.unit_size);
-		for(int i = 0; i<other.num_units; i++){
+		for (int i = 0; i < other.num_units; i++) {
 			sums[i] = other.sums[i];
 			counters[i] = other.counters[i];
 			timestamps[i] = other.timestamps[i];
@@ -38,18 +43,17 @@ public class Agglomerator {
 	}
 
 	/**
-	 * Adds a reading to the agglomerator.
-	 * Returns true if the timestamp is valid(within the time frame).
+	 * Adds a reading to the agglomerator. Returns true if the timestamp is
+	 * valid(within the time frame).
 	 */
 	public boolean addReading(int timestamp, double speed) {
 		timestamp /= unit_size;
-		
+
 		if (timestamp < lastValidTime(maxTime))
 			return false;
 
 		if (maxTime < timestamp)
 			maxTime = timestamp;
-
 
 		int pos = timestamp % num_units;
 
@@ -62,54 +66,67 @@ public class Agglomerator {
 			timestamps[pos] = timestamp;
 		} else
 			return false;
-		
+
 		num_readings++;
 		return true;
 	}
-	
-	public double getNumReadings(){
+
+	/**
+	 * Returns the number of readings already done
+	 * 
+	 * @return
+	 */
+	public double getNumReadings() {
 		return num_readings;
 	}
-	
-	private int lastValidTime(int upperLimit){
-		return upperLimit-num_units+1;
-	}
-	
-	/**
-	 * Returns an array with two positions. In the first is the sum and in the second the count
-	 * 
-	 * @param currentTime
-	 * @return an array with two positions. In the first is the sum and in the second the count.
-	 */
-	public double[] getAverage(int currentTime){
-	currentTime /= unit_size;
-	int lastValidTime = lastValidTime(currentTime);
-	double[] avg = new double[2];
-	for (int i = 0; i < num_units; i++)
-		if (timestamps[i] >= lastValidTime){
-			avg[0] += sums[i];
-			avg[1] += counters[i];
-		}
-	return avg;
+
+	private int lastValidTime(int upperLimit) {
+		return upperLimit - num_units + 1;
 	}
 
+	/**
+	 * Returns an array with two positions. In the first is the sum and in the
+	 * second the count
+	 * 
+	 * @param currentTime
+	 * @return an array with two positions. In the first is the sum and in the
+	 *         second the count.
+	 */
+	public double[] getAverage(int currentTime) {
+		currentTime /= unit_size;
+		int lastValidTime = lastValidTime(currentTime);
+		double[] avg = new double[2];
+		for (int i = 0; i < num_units; i++)
+			if (timestamps[i] >= lastValidTime) {
+				avg[0] += sums[i];
+				avg[1] += counters[i];
+			}
+		return avg;
+	}
+
+	/**
+	 * This method merges two Agglomerators, but it should only be used by
+	 * Hallow Replicas because it does an incremental merge.
+	 * 
+	 * @param agg
+	 * @return
+	 */
 	public boolean merge(Agglomerator agg) {
-		if(num_units!=agg.num_units || unit_size != agg.unit_size)
+		if (num_units != agg.num_units || unit_size != agg.unit_size)
 			return false;
-		for(int i = 0; i<num_units; i++){
-			if(timestamps[i]==agg.timestamps[i]){
-				sums[i]+=agg.sums[i];
-				counters[i]+=agg.counters[i];
-			}else if(timestamps[i]<agg.timestamps[i]){
-				sums[i]=agg.sums[i];
-				counters[i]=agg.counters[i];
-				timestamps[i]=agg.timestamps[i];
-			}	
+		for (int i = 0; i < num_units; i++) {
+			if (timestamps[i] == agg.timestamps[i]) {
+				sums[i] += agg.sums[i];
+				counters[i] += agg.counters[i];
+			} else if (timestamps[i] < agg.timestamps[i]) {
+				sums[i] = agg.sums[i];
+				counters[i] = agg.counters[i];
+				timestamps[i] = agg.timestamps[i];
+			}
 		}
 		num_readings += agg.num_readings;
 		maxTime = Math.max(maxTime, agg.maxTime);
 		return true;
 	}
-	
-	
+
 }

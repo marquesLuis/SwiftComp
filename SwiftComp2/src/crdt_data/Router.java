@@ -17,7 +17,7 @@ public class Router{
 		this.multiplier = multiplier;
 
 		this.routerID = routerID;
-
+		hallows = new ArrayList<Hallow>();
 		maps = new CRDTMap[num_tables];
 		for (int i = 0; i < num_tables; i++)
 			maps[i] = new CRDTHashMap(this.routerID);
@@ -51,13 +51,26 @@ public class Router{
 	}
 
 	public synchronized void mergeRouter(Router r) {
-		for (int i = 0; i < num_tables; i++)
+		Thread[] t = new Thread[num_tables];
+		for (int i = 0; i < num_tables; i++){
+			t[i] = new MyMerger(maps[i], r.maps[i]);
 			maps[i].merge(r.maps[i]);
+			t[i].setDaemon(true);
+			t[i].start();
+		}
+		for (int i = 0; i < num_tables; i++){
+			try {
+				t[i].join();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 
 	public int addNewHallow(File file) {
 		int id = hallows.size();
-		hallows.add(new Hallow(file, routerID + "_hallow_" + id, multiplier));
+		hallows.add(new Hallow(file, "router_"+routerID + "_hallow_" + id, multiplier));
 		return id;
 	}
 
@@ -107,6 +120,21 @@ public class Router{
 			Router.this.addReading(mapIndex(wayID), time, wayID, speed);
 		}
 
+	}
+	
+	private class MyMerger extends Thread implements Runnable {
+
+		private CRDTMap master, other;
+
+		public MyMerger(CRDTMap master, CRDTMap other) {
+			this.master = master;
+			this.other = other;
+		}
+
+		@Override
+		public void run() {
+			master.merge(other);
+		}
 	}
 
 }

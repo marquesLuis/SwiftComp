@@ -23,16 +23,12 @@ public class CRDTHashAverage implements CRDTAverage {
 		map.put(processID, myAgglomerator);
 	}
 
-	/**
-	 * 
-	 * @param timeStamp
-	 * @param speed
-	 * @return
-	 */
+	@Override
 	public boolean addReading(int timeStamp, double speed) {
 		return myAgglomerator.addReading(timeStamp, speed);
 	}
 
+	@Override
 	public double[] getAverage(int currentTime) {
 		Collection<Agglomerator> avgs = map.values();
 		double[] result = new double[2];
@@ -44,6 +40,7 @@ public class CRDTHashAverage implements CRDTAverage {
 		return result;
 	}
 
+	@Override
 	public HashMap<String, Agglomerator> merge(CRDTAverage other) {
 		HashMap<String, Agglomerator> otherMap = ((CRDTHashAverage) other).map;
 

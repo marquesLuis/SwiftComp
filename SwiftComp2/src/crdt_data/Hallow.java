@@ -21,6 +21,12 @@ public class Hallow {
 		t.start();
 	}
 	
+	/**
+	 * @param time
+	 * @param wayID
+	 * @param speed
+	 * @return
+	 */
 	private synchronized boolean addReading(int time, String wayID, double speed){
 		needsUpdate = true;
 		Agglomerator agg = map.get(wayID);
@@ -31,6 +37,10 @@ public class Hallow {
 		return agg.addReading(time, speed);
 	}
 	
+	/**
+	 * Returns true if this hallow replica has something new add to the system
+	 * @return
+	 */
 	public boolean needsUpdate(){
 		return needsUpdate;
 	}
